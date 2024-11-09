@@ -1,8 +1,9 @@
 import { useContext } from 'react';
 import { CharacterContext } from '../context/CharacterContext';
-import AttributeControl from './AttributeControl';
 import { Attribute, Character } from '../types';
 import { ATTRIBUTE_LIST } from '../consts';
+import AttributeControl from './AttributeControl';
+import ClassList from './ClassList';
 
 const CharacterCard = ({ character }: { character: Character }) => {
   const { updateAttribute } = useContext(CharacterContext)
@@ -36,6 +37,9 @@ const CharacterCard = ({ character }: { character: Character }) => {
               onDecrease={() => handleAttributeDecrease(attribute)}
             />
           ))}
+        </div>
+        <div style={{ flex: 1 }}>
+          <ClassList character={character} />
         </div>
       </div>
     </div>
