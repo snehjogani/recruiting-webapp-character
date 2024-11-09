@@ -1,12 +1,14 @@
-import { useContext } from 'react';
+import { useContext, useMemo } from 'react';
 import { CharacterContext } from '../context/CharacterContext';
 import { Attribute, Character } from '../types';
-import { ATTRIBUTE_LIST } from '../consts';
+import { ATTRIBUTE_LIST, SKILL_LIST } from '../consts';
 import AttributeControl from './AttributeControl';
 import ClassList from './ClassList';
+import SkillControl from './SkillControl';
+import { calculateModifier, calculateSkillPoints, validateSkillPoints } from '../utils';
 
 const CharacterCard = ({ character }: { character: Character }) => {
-  const { updateAttribute } = useContext(CharacterContext)
+  const { updateAttribute, updateSkillPoints } = useContext(CharacterContext)
 
   const handleAttributeIncrease = (attribute: Attribute) => {
     if (Object.values(character.attributes).reduce((a, b) => a + b, 0) < 70) {
@@ -21,6 +23,25 @@ const CharacterCard = ({ character }: { character: Character }) => {
       updateAttribute(character.id, attribute, -1)
     }
   }
+
+  const handleSkillPointIncrease = (skillName: string) => {
+    if (validateSkillPoints(totalSkillPoints, character.skillPoints, 1)) {
+      updateSkillPoints(character.id, skillName, 1)
+    } else {
+      alert("You cannot allocate more skill points than your total available points.")
+    }
+  }
+
+  const handleSkillPointDecrease = (skillName: string) => {
+    if (character.skillPoints[skillName].points > 0) {
+      updateSkillPoints(character.id, skillName, -1)
+    }
+  }
+
+  const totalSkillPoints = useMemo(() => {
+    const intelligenceModifier = calculateModifier(character.attributes.Intelligence)
+    return calculateSkillPoints(intelligenceModifier)
+  }, [character.attributes.Intelligence])
 
   return (
     <div>
@@ -40,6 +61,21 @@ const CharacterCard = ({ character }: { character: Character }) => {
         </div>
         <div style={{ flex: 1 }}>
           <ClassList character={character} />
+        </div>
+        <div style={{ flex: 1 }}>
+          <h2>Skills</h2>
+          <h4>Total Available Skill Points: {totalSkillPoints}</h4>
+          <div>
+            {SKILL_LIST.map((skill) => (
+              <SkillControl
+                key={skill.name}
+                skill={skill}
+                values={character.skillPoints[skill.name]}
+                onIncrease={() => handleSkillPointIncrease(skill.name)}
+                onDecrease={() => handleSkillPointDecrease(skill.name)}
+              />
+            ))}
+          </div>
         </div>
       </div>
     </div>

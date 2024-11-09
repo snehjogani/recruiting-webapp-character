@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import { useState } from "react";
 import { ATTRIBUTE_LIST, CLASS_LIST } from "../consts";
 import { Attributes, Character, Class } from "../types";
 import { checkClassEligibility } from "../utils";
@@ -8,7 +8,7 @@ const ClassList = ({ character }: { character: Character }) => {
 
   return (
     <div>
-      <h2>Class</h2>
+      <h2>Classes</h2>
       {Object.keys(CLASS_LIST).map((value: Class, index) =>
         <div key={index} onClick={() => setSelectedClass({ [value]: CLASS_LIST[value] })}>
           <h4 style={{ color: checkClassEligibility(character.attributes, CLASS_LIST[value]) ? "green" : undefined }}>{value}</h4>

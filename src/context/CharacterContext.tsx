@@ -1,11 +1,14 @@
 import React, { createContext, useEffect, useState } from "react";
-import { Attribute, Attributes, Character } from "../types";
+import { Attribute, Attributes, Character, SkillPoints } from "../types";
+import { ATTRIBUTE_LIST, SKILL_LIST } from "../consts";
+import { calculateModifier } from "../utils";
 
 interface AppState {
   characters: Character[];
   setCharacters: React.Dispatch<React.SetStateAction<Character[]>>;
   createCharacter: () => void;
   updateAttribute: (id: string, attribute: Attribute, delta: number) => void;
+  updateSkillPoints: (id: string, skillName: string, delta: number) => void;
 }
 
 export const CharacterContext = createContext<AppState>({
@@ -13,6 +16,7 @@ export const CharacterContext = createContext<AppState>({
   setCharacters: undefined,
   createCharacter: undefined,
   updateAttribute: undefined,
+  updateSkillPoints: undefined,
 });
 
 interface AppProps {
@@ -32,22 +36,58 @@ const CharacterContextProvider = ({ children }: AppProps) => {
   }, [])
 
   const createCharacter = () => {
-    const defaultAttributes: Attributes = {
-      Strength: 10,
-      Dexterity: 10,
-      Constitution: 10,
-      Intelligence: 10,
-      Wisdom: 10,
-      Charisma: 10,
-    }
+    const defaultAttributes: Attributes = ATTRIBUTE_LIST.reduce((obj, attribute) => {
+      obj[attribute] = 10
+      return obj
+    }, {} as Attributes)
 
-    setCharacters(list => [...list, { id: `${characters.length + 1}`, attributes: defaultAttributes }])
+    const defaultSkillPoints: SkillPoints = SKILL_LIST.reduce((obj, skill) => {
+      const modifier = 0
+      obj[skill.name] = {
+        points: 0, // points allocated to the skill
+        modifier, // the attribute modifier dependency of the skill
+        total: 0, // final skill value (points + modifier)
+      }
+      return obj;
+    }, {} as SkillPoints)
+
+    setCharacters(list => [...list, { id: `${characters.length + 1}`, attributes: defaultAttributes, skillPoints: defaultSkillPoints }])
   }
 
   const updateAttribute = (id: string, attribute: Attribute, delta: number) => {
     let updatedCharacter = { ...characters.find(obj => obj.id === id) }
 
     updatedCharacter.attributes[attribute] += delta
+    // Update skill points every time an attribute is updated 
+    updatedCharacter.skillPoints = updateSkillPointsByAttributes(updatedCharacter.attributes, updatedCharacter.skillPoints)
+
+    setCharacters(list => list.map((obj) => obj.id === id ? updatedCharacter : obj))
+  }
+
+  const updateSkillPointsByAttributes = (characterAttributes: Attributes, characterSkillPoints: SkillPoints) => {
+    return SKILL_LIST.reduce((obj, skill) => {
+      const attribute = skill.attributeModifier
+      const modifier = calculateModifier(characterAttributes[attribute])
+      obj[skill.name] = {
+        points: characterSkillPoints[skill.name].points,
+        modifier,
+        total: characterSkillPoints[skill.name].points + modifier
+      }
+      return obj
+    }, {} as SkillPoints)
+  }
+
+  const updateSkillPoints = (id: string, skillName: string, delta: number) => {
+    let updatedCharacter = { ...characters.find(obj => obj.id === id) }
+
+    const currentPoints = updatedCharacter.skillPoints[skillName].points
+
+    let updatedSkillPoints = { ...updatedCharacter.skillPoints }
+    // Set the points spent manually for the specific skill
+    updatedSkillPoints[skillName].points = currentPoints + delta
+    // Calculate the total skill value
+    updatedSkillPoints[skillName].total = updatedSkillPoints[skillName].points + updatedSkillPoints[skillName].modifier
+    updatedCharacter.skillPoints = updatedSkillPoints
 
     setCharacters(list => list.map((obj) => obj.id === id ? updatedCharacter : obj))
   }
@@ -58,7 +98,8 @@ const CharacterContextProvider = ({ children }: AppProps) => {
         characters,
         setCharacters,
         createCharacter,
-        updateAttribute
+        updateAttribute,
+        updateSkillPoints,
       }}
     >
       {children}
