@@ -5,6 +5,7 @@ import { ATTRIBUTE_LIST, SKILL_LIST } from '../consts';
 import AttributeControl from './AttributeControl';
 import ClassList from './ClassList';
 import SkillControl from './SkillControl';
+import SkillCheck from './SkillCheck';
 import { calculateModifier, calculateSkillPoints, validateSkillPoints } from '../utils';
 
 const CharacterCard = ({ character }: { character: Character }) => {
@@ -46,6 +47,7 @@ const CharacterCard = ({ character }: { character: Character }) => {
   return (
     <div>
       <h2>Character: {character.id}</h2>
+      <SkillCheck skillPoints={character.skillPoints} />
       <div style={{ display: "flex", flexDirection: "row", flexGrow: 1 }}>
         <div style={{ flex: 1 }}>
           <h2>Attributes</h2>
