@@ -1,3 +1,5 @@
+import { ATTRIBUTE_LIST } from "./consts";
+
 export type Attributes = {
     Strength: number;
     Dexterity: number;
@@ -13,3 +15,5 @@ export type Character = {
     id: string;
     attributes: Attributes;
 }
+
+export type Attribute = typeof ATTRIBUTE_LIST[number];

@@ -1,16 +1,18 @@
 import React, { createContext, useEffect, useState } from "react";
-import { Attributes, Character } from "../types";
+import { Attribute, Attributes, Character } from "../types";
 
 interface AppState {
   characters: Character[];
   setCharacters: React.Dispatch<React.SetStateAction<Character[]>>;
   createCharacter: () => void;
+  updateAttribute: (id: string, attribute: Attribute, delta: number) => void;
 }
 
 export const CharacterContext = createContext<AppState>({
   characters: [],
   setCharacters: undefined,
-  createCharacter: undefined
+  createCharacter: undefined,
+  updateAttribute: undefined,
 });
 
 interface AppProps {
@@ -42,12 +44,21 @@ const CharacterContextProvider = ({ children }: AppProps) => {
     setCharacters(list => [...list, { id: `${characters.length + 1}`, attributes: defaultAttributes }])
   }
 
+  const updateAttribute = (id: string, attribute: Attribute, delta: number) => {
+    let updatedCharacter = { ...characters.find(obj => obj.id === id) }
+
+    updatedCharacter.attributes[attribute] += delta
+
+    setCharacters(list => list.map((obj) => obj.id === id ? updatedCharacter : obj))
+  }
+
   return (
     <CharacterContext.Provider
       value={{
         characters,
         setCharacters,
         createCharacter,
+        updateAttribute
       }}
     >
       {children}
