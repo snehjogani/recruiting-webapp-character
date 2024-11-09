@@ -2,6 +2,7 @@ import React, { createContext, useEffect, useState } from "react";
 import { Attribute, Attributes, Character, SkillPoints } from "../types";
 import { ATTRIBUTE_LIST, SKILL_LIST } from "../consts";
 import { calculateModifier } from "../utils";
+import API from "../api/characters";
 
 interface AppState {
   characters: Character[];
@@ -9,6 +10,8 @@ interface AppState {
   createCharacter: () => void;
   updateAttribute: (id: string, attribute: Attribute, delta: number) => void;
   updateSkillPoints: (id: string, skillName: string, delta: number) => void;
+  getCharacters: () => Promise<void>;
+  saveCharacters: () => Promise<void>;
 }
 
 export const CharacterContext = createContext<AppState>({
@@ -17,6 +20,8 @@ export const CharacterContext = createContext<AppState>({
   createCharacter: undefined,
   updateAttribute: undefined,
   updateSkillPoints: undefined,
+  getCharacters: undefined,
+  saveCharacters: undefined,
 });
 
 interface AppProps {
@@ -34,6 +39,26 @@ const CharacterContextProvider = ({ children }: AppProps) => {
       }
     }
   }, [])
+
+  const getCharacters = async () => {
+    try {
+      const response = await API.getCharacters()
+      if (!!response.data.body?.characters) {
+        setCharacters(response.data.body?.characters)
+      }
+    } catch (error) {
+      alert("Something went wrong! Please try agian.")
+    }
+  }
+
+  const saveCharacters = async () => {
+    try {
+      await API.saveCharacters(characters)
+      alert("Characters saved successfully!")
+    } catch (error) {
+      alert("Something went wrong! Please try agian.")
+    }
+  }
 
   const createCharacter = () => {
     const defaultAttributes: Attributes = ATTRIBUTE_LIST.reduce((obj, attribute) => {
@@ -100,6 +125,8 @@ const CharacterContextProvider = ({ children }: AppProps) => {
         createCharacter,
         updateAttribute,
         updateSkillPoints,
+        getCharacters,
+        saveCharacters
       }}
     >
       {children}

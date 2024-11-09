@@ -57,3 +57,5 @@ export const SKILL_LIST = [
     { name: 'Survival', attributeModifier: 'Wisdom' },
 
 ]
+
+export const URI = "https://recruiting.verylongdomaintotestwith.ca/api/{snehjogani}/character"
